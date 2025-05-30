@@ -1,0 +1,68 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak-ingress
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+    - host: hostname.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak-one-service
+                port:
+                  name: kcs-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-one-service
+spec:
+  type: ClusterIP
+  selector:
+    app: keycloak-one
+  ports:
+    - name: kcs-port
+      port: 7999
+      targetPort: kc-container
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-one
+  labels:
+    app: keycloak-one
+
+spec:
+  selector:
+    matchLabels:
+      app: keycloak-one
+
+  # Number of desired pods
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: keycloak-one
+    spec:
+      containers:
+        - name: keycloak-one
+          image: quay.io/keycloak/keycloak:latest
+          args:
+            - start-dev
+          ports:
+            - name: kc-container
+              containerPort: 8080
+          env:
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              value: admin
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: admin
+            - name: KC_DB
+              value: dev-mem
+            - name: KC_LOG_LEVEL
+              value: DEBUG

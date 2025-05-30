@@ -1,0 +1,27 @@
+apiVersion: skaffold/v2beta22
+kind: Config
+build:
+  local:
+    concurrency: 8
+
+  tagPolicy:
+    gitCommit:
+      variant: AbbrevCommitSha
+      ignoreChanges: true
+
+deploy:
+  statusCheckDeadlineSeconds: 480
+  helm:
+    flags:
+      install:
+        - "--atomic=false" #automatically perform rollback
+        - "--timeout=4m"
+      upgrade:
+        - "--atomic=false"
+        - "--timeout=4m"
+
+    releases:
+
+      - name: kc-one-release
+        chartPath: charts/keycloak-one
+
