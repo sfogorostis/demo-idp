@@ -1,0 +1,158 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: &job_name keycloak-setup-job
+  labels:
+    app: *job_name
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+
+spec:
+  template:
+    metadata:
+      labels:
+        app: *job_name
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: *job_name
+          image: cfmanteiga/alpine-bash-curl-jq
+          env:
+            - name: CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: keycloak-config
+                  key: clientId
+
+            - name: CLIENT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: keycloak-config
+                  key: clientSecret
+
+            - name: USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: keycloak-config
+                  key: username
+
+            - name: PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: keycloak-config
+                  key: password
+
+            - name: USER_GROUP_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: keycloak-config
+                  key: userGroupKey
+
+            - name: USER_GROUP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: keycloak-config
+                  key: userGroupName
+
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Keycloak Tests Instance Setup for namespace ${NAMESPACE}"
+              echo "Client Id / Secret : ${CLIENT_ID} / ${CLIENT_SECRET}"
+              echo "User : ${USERNAME} / ${PASSWORD}"
+              # Make sure that Keycloak has time to start up
+              sleep 15
+
+              BASE_URL="http://keycloak-one-service:7999"
+              REALM_URL="${BASE_URL}/admin/realms/master"
+              # ----------------
+              # Get Admin Token
+              # ----------------
+              ADMIN_TOKEN=$(curl --location --request POST "${BASE_URL}/realms/master/protocol/openid-connect/token" \
+              --header 'Content-Type: application/x-www-form-urlencoded' \
+              --data-urlencode 'client_id=admin-cli' \
+              --data-urlencode 'username=admin' \
+              --data-urlencode 'password=admin' \
+              --data-urlencode 'grant_type=password' | \
+              jq -r .access_token)
+
+              echo "admin token=${ADMIN_TOKEN}"
+
+              # --------------
+              # Create Client
+              # --------------
+              CLIENT_POST='{
+                "id" : "_CLIENT_ID_",
+                "name" : "Test Client",
+                "secret" : "_CLIENT_SECRET_",
+                "redirectUris" : ["https://api-dev.example.com/_NAMESPACE_/v1/login/oauth2/code/keycloak-one"],
+                "protocolMappers" : [
+                  {
+                    "name": "Group Name",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": false,
+                    "config": {
+                      "userinfo.token.claim": "true",
+                      "user.attribute": "group-name",
+                      "id.token.claim": "true",
+                      "access.token.claim": "false",
+                      "claim.name": "group-name",
+                      "jsonType.label": "String"
+                    }
+                  },
+                  {
+                    "name": "Group Key",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": false,
+                    "config": {
+                      "userinfo.token.claim": "true",
+                      "user.attribute": "group-key",
+                      "id.token.claim": "true",
+                      "access.token.claim": "false",
+                      "claim.name": "group-key",
+                      "jsonType.label": "String"
+                    }
+                  }
+                ]
+              }'
+
+              CLIENT_POST=`echo "${CLIENT_POST}" | \
+              sed "s/_CLIENT_ID_/${CLIENT_ID}/" | \
+              sed "s/_CLIENT_SECRET_/${CLIENT_SECRET}/" | \
+              sed "s/_NAMESPACE_/${NAMESPACE}/"`
+              echo "Client POST: ${CLIENT_POST}"
+
+              curl --location --request POST "${REALM_URL}/clients" \
+              --header "Authorization: Bearer ${ADMIN_TOKEN}" \
+              --header 'Content-Type: application/json' \
+              --data-raw "${CLIENT_POST}"
+
+              # ------------
+              # Create User
+              # ------------
+              USER_POST='{
+                "username" : "_USERNAME_",
+                "email" : "_USERNAME_",
+                "emailVerified" : true,
+                "enabled" : true,
+                "firstName" : "Ettore",
+                "lastName" : "Majorana",
+                "requiredActions" : [],
+                "attributes" : {"group-key":"_GROUP_KEY_","group-name":"_GROUP_NAME_"},
+                "credentials": [{"type": "password","temporary":false, "value":"_PASSWORD_"}]
+              }'
+
+              USER_POST=`echo "${USER_POST}" | \
+              sed "s/_GROUP_KEY_/${USER_GROUP_KEY}/g" | \
+              sed "s/_GROUP_NAME_/${USER_GROUP_NAME}/g" | \
+              sed "s/_USERNAME_/${USERNAME}/g" | \
+              sed "s/_PASSWORD_/${PASSWORD}/g"`
+              echo "User POST: ${USER_POST}"
+
+              curl --location --request POST "${REALM_URL}/users" \
+              --header "Authorization: Bearer ${ADMIN_TOKEN}" \
+              --header 'Content-Type: application/json' \
+              --data-raw "${USER_POST}"
