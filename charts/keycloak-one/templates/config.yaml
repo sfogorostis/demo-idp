@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-config
+  labels:
+    app: keycloak
+data:
+  clientId: {{ uuidv4 }}
+  clientSecret: {{ uuidv4 }}
+  username: user.{{ uuidv4 }}@example.com
+  password: password
+  userGroupKey: 'group01'
+  userGroupName: 'Group One'
