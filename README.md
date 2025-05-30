@@ -36,10 +36,10 @@ INFO[0017] Cluster 'sfogo-cluster' created successfully!
 INFO[0017] You can now use it like this:
 kubectl cluster-info
 ```
-
+## Start
 ```
 skaffold run --tail
 ```
 
-Available at
-[http://hostname.127.0.0.1.nip.io:8199/](http://hostname.127.0.0.1.nip.io:8199/)
+Available at [http://hostname.127.0.0.1.nip.io:8199/](http://hostname.127.0.0.1.nip.io:8199/)
+Well Known OIDC Config [http://hostname.127.0.0.1.nip.io:8199/realms/master/.well-known/openid-configuration](http://hostname.127.0.0.1.nip.io:8199/realms/master/.well-known/openid-configuration)
