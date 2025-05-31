@@ -86,7 +86,8 @@ spec:
                 "id" : "_CLIENT_ID_",
                 "name" : "Test Client",
                 "secret" : "_CLIENT_SECRET_",
-                "redirectUris" : ["https://api-dev.example.com/_NAMESPACE_/v1/login/oauth2/code/keycloak-one"],
+                "webOrigins" : ["https://dev-qtepl0vf.us.auth0.com/"],
+                "redirectUris" : ["https://dev-qtepl0vf.us.auth0.com/login/callback"],
                 "protocolMappers" : [
                   {
                     "name": "Group Name",
