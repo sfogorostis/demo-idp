@@ -69,7 +69,7 @@ CLIENT_POST='{
 CLIENT_POST=$(echo "${CLIENT_POST}" | \
   sed "s/_CLIENT_ID_/${CLIENT_ID}/" | \
   sed "s/_CLIENT_SECRET_/${CLIENT_SECRET}/")
-echo "Client POST: ${CLIENT_POST}" | jq -r .
+echo "Client POST: ${CLIENT_POST}"
 
 curl -k --verbose --location --request POST "${REALM_URL}/clients" \
 --header "Authorization: Bearer ${ADMIN_TOKEN}" \
@@ -101,4 +101,4 @@ echo "User POST: ${USER_POST}"
 curl -k --verbose --location --request POST "${REALM_URL}/users" \
 --header "Authorization: Bearer ${ADMIN_TOKEN}" \
 --header 'Content-Type: application/json' \
---data-raw "${USER_POST}" | jq -r .
+--data-raw "${USER_POST}"
