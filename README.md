@@ -43,3 +43,50 @@ skaffold run --tail
 
 Available at [http://hostname.127.0.0.1.nip.io:8199/](http://hostname.127.0.0.1.nip.io:8199/)
 Well Known OIDC Config [http://hostname.127.0.0.1.nip.io:8199/realms/master/.well-known/openid-configuration](http://hostname.127.0.0.1.nip.io:8199/realms/master/.well-known/openid-configuration)
+
+# Local Keycloak in just Docker (No k3d)
+## Generate trusted certificates with mkcert
+```
+brew install mkcert
+brew install nss # if you use Firefox
+```
+See [https://github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert)
+
+## Create Local CA
+```
+mkcert -install
+Created a new local CA 💥
+Sudo password:
+The local CA is now installed in the system trust store! ⚡️
+The local CA is now installed in the Firefox trust store (requires browser restart)! 🦊
+```
+
+## Create Certificate for localhost
+```
+mkcert localhost 127.0.0.1 ::1
+Created a new certificate valid for the following names 📜
+ - "localhost"
+ - "127.0.0.1"
+ - "::1"
+
+The certificate is at "./localhost+2.pem" and the key at "./localhost+2-key.pem" ✅
+```
+
+## Copy
+```
+cp localhost+2.pem server.crt.pem
+cp localhost+2-key.pem server.key.pem
+```
+
+## Start keycloak on https
+```
+./server-run-secure.sh
+```
+
+- Available at [https://localhost:8443](https://localhost:8443)
+- Login with `admin/admin`
+- Run Setup
+
+```
+./server-setup.sh  
+```
