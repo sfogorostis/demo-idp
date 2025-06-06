@@ -32,39 +32,43 @@ CLIENT_POST='{
   "id" : "_CLIENT_ID_",
   "name" : "Test Client",
   "secret" : "_CLIENT_SECRET_",
+  "type" : "confidential",
   "webOrigins" : ["https://dev-qtepl0vf.us.auth0.com/"],
-  "redirectUris" : ["https://dev-qtepl0vf.us.auth0.com/login/callback"],
-  "protocolMappers" : [
-    {
-      "name": "Group Name",
-      "protocol": "openid-connect",
-      "protocolMapper": "oidc-usermodel-attribute-mapper",
-      "consentRequired": false,
-      "config": {
-        "userinfo.token.claim": "true",
-        "user.attribute": "group-name",
-        "id.token.claim": "true",
-        "access.token.claim": "false",
-        "claim.name": "group-name",
-        "jsonType.label": "String"
-      }
-    },
-    {
-      "name": "Group Key",
-      "protocol": "openid-connect",
-      "protocolMapper": "oidc-usermodel-attribute-mapper",
-      "consentRequired": false,
-      "config": {
-        "userinfo.token.claim": "true",
-        "user.attribute": "group-key",
-        "id.token.claim": "true",
-        "access.token.claim": "false",
-        "claim.name": "group-key",
-        "jsonType.label": "String"
-      }
-    }
-  ]
+  "redirectUris" : ["https://dev-qtepl0vf.us.auth0.com/login/callback"]
 }'
+
+# Removed Protocol Mappers from Client POST
+#  "protocolMappers" : [
+#    {
+#      "name": "Group Name",
+#      "protocol": "openid-connect",
+#      "protocolMapper": "oidc-usermodel-attribute-mapper",
+#      "consentRequired": false,
+#      "config": {
+#        "userinfo.token.claim": "true",
+#        "user.attribute": "group-name",
+#        "id.token.claim": "true",
+#        "access.token.claim": "false",
+#        "claim.name": "group-name",
+#        "jsonType.label": "String"
+#      }
+#    },
+#    {
+#      "name": "Group Key",
+#      "protocol": "openid-connect",
+#      "protocolMapper": "oidc-usermodel-attribute-mapper",
+#      "consentRequired": false,
+#      "config": {
+#        "userinfo.token.claim": "true",
+#        "user.attribute": "group-key",
+#        "id.token.claim": "true",
+#        "access.token.claim": "false",
+#        "claim.name": "group-key",
+#        "jsonType.label": "String"
+#      }
+#    }
+#  ]
+
 
 CLIENT_POST=$(echo "${CLIENT_POST}" | \
   sed "s/_CLIENT_ID_/${CLIENT_ID}/" | \
@@ -87,9 +91,11 @@ USER_POST='{
   "firstName" : "Olivier",
   "lastName" : "Gorostis",
   "requiredActions" : [],
-  "attributes" : {"group-key":"_GROUP_KEY_","group-name":"_GROUP_NAME_"},
   "credentials": [{"type": "password","temporary":false, "value":"_PASSWORD_"}]
 }'
+
+# Removed custom attributes
+#  "attributes" : {"group-key":"_GROUP_KEY_","group-name":"_GROUP_NAME_"},
 
 USER_POST=`echo "${USER_POST}" | \
 sed "s/_GROUP_KEY_/${USER_GROUP_KEY}/g" | \
